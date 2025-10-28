@@ -1,3 +1,5 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Animated, Easing, Dimensions, View, Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import MontrealStarsOnboarding from './MontrealStar/MontrealStarScreens/MontrealStarsOnboarding';
@@ -8,7 +10,6 @@ import { MontrealStarAppContextProvider } from './MontrealStar/MontrealStarStore
 import MontrealCompanyGameplay from './MontrealStar/MontrealStarScreens/MontrealCompanyGameplay';
 import MontrealSingleGameplay from './MontrealStar/MontrealStarScreens/MontrealSingleGameplay';
 import Toast from 'react-native-toast-message';
-import { useEffect, useState, useRef } from 'react';
 import MontrealStarLoader from './MontrealStar/MontrealStarComponents/MontrealStarLoader';
 import MontrealStarValuationNightAlex from './MontrealStar/MontrealStarScreens/MontrealStarValuationNightAlex';
 // libs
@@ -729,11 +730,52 @@ const App = () => {
     }, 6000);
   }, []);
 
+  // Animation state
+  const screenWidth = Dimensions.get('window').width;
+  const slideAnim = useRef(new Animated.Value(0)).current; // 0 .. -screenWidth
+
+  useEffect(() => {
+    // запускаємо анімацію тільки коли компонент лоудера показаний
+    if (!startMontrealStarLoader) {
+      // Слайд від 0 до -screenWidth за 6 секунд
+      Animated.timing(slideAnim, {
+        toValue: -screenWidth,
+        duration: 4000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }).start(() => {
+        // по завершенні анімації показуємо основний контент
+        //setstartMontrealStarLoader(true);
+      });
+    }
+  }, [slideAnim, screenWidth, startMontrealStarLoader]);
+
   return (
     <NavigationContainer>
       <MontrealStarAppContextProvider>
         {!startMontrealStarLoader ? (
-          <MontrealStarLoader />
+           <View style={{ flex: 1, overflow: 'hidden' }}>
+          {/* Контейнер шириною у 2 * screenWidth: два зображення поруч */}
+          <Animated.View
+            style={{
+              flexDirection: 'row',
+              width: screenWidth * 2,
+              height: '100%',
+              transform: [{ translateX: slideAnim }],
+            }}
+          >
+            <Image
+              style={{ width: screenWidth, height: '100%' }}
+              source={require('./assets/images/1.png')}
+              resizeMode="cover"
+            />
+            <Image
+              style={{ width: screenWidth, height: '100%' }}
+              source={require('./assets/images/2.png')}
+              resizeMode="cover"
+            />
+          </Animated.View>
+        </View>
         ) : (
           <Route isFatch={route}/>
         )}
