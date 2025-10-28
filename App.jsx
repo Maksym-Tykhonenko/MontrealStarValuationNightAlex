@@ -727,7 +727,7 @@ const App = () => {
   useEffect(() => {
     setTimeout(() => {
       setStartMontrealStarLoader(true);
-    }, 6000);
+    }, 8000);
   }, []);
 
   // Animation state
